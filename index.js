@@ -49,5 +49,6 @@ io.on("connection", socket => {
   );
 });
 
-io.listen(3000);
-console.log("Socket signaling server running on port 3000");
+io.listen(process.env.PORT || 3000)
+console.log("Socket signaling server running on port " + (process.env.PORT || 3000))
+
