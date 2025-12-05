@@ -1,6 +1,8 @@
-import { Server } from "socket.io";
+const { Server } = require("socket.io");
 
-const io = new Server({ cors: { origin: "*" } });
+const io = new Server({
+  cors: { origin: "*" },
+});
 
 io.on("connection", socket => {
   console.log("User connected", socket.id);
@@ -20,7 +22,7 @@ io.on("connection", socket => {
 
   socket.on("accept_call", data => {
     io.to(data.from).emit("call_accepted", {
-      from: data.to, // callee tells caller
+      from: data.to,
       to: data.from,
       roomCode: data.roomCode,
     });
@@ -36,7 +38,7 @@ io.on("connection", socket => {
 
   socket.on("end_call", data => {
     io.to(data.to).emit("call_ended", {
-      from: data.from
+      from: data.from,
       to: data.to,
       roomCode: data.roomCode,
     });
