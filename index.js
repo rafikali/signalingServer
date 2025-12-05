@@ -1,41 +1,59 @@
-import { Server } from "socket.io"
+import { Server } from "socket.io";
 
-const io = new Server({
-  cors: { origin: "*" }
-})
+const io = new Server({ cors: { origin: "*" } });
 
 io.on("connection", socket => {
-  console.log("User connected", socket.id)
+  console.log("User connected", socket.id);
 
-  // Register user ID so we can message them
   socket.on("register", userId => {
-    socket.join(userId)
-  })
+    socket.data.userId = userId;
+    socket.join(userId);
+  });
 
-  // Caller starts call
   socket.on("start_call", data => {
     io.to(data.to).emit("incoming_call", {
       from: data.from,
-      roomCode: data.roomCode
-    })
-  })
+      to: data.to,
+      roomCode: data.roomCode,
+    });
+  });
 
-  // Receiver accepts
   socket.on("accept_call", data => {
-    io.to(data.to).emit("call_accepted", data)
-  })
+    io.to(data.from).emit("call_accepted", {
+      from: data.to, // callee tells caller
+      to: data.from,
+      roomCode: data.roomCode,
+    });
+  });
 
-  // Receiver rejects
   socket.on("reject_call", data => {
-    io.to(data.to).emit("call_rejected", data)
-  })
+    io.to(data.from).emit("call_rejected", {
+      from: data.to,
+      to: data.from,
+      roomCode: data.roomCode,
+    });
+  });
 
-  // End call
   socket.on("end_call", data => {
-    io.to(data.to).emit("call_ended")
-  })
-})
+    io.to(data.to).emit("call_ended", {
+      from: data.from
+      to: data.to,
+      roomCode: data.roomCode,
+    });
+  });
 
-io.listen(process.env.PORT || 3000)
+  socket.on("sdp_offer", data => {
+    io.to(data.to).emit("sdp_offer", data);
+  });
 
-console.log("Socket signaling server running on port " + (process.env.PORT || 3000))
+  socket.on("sdp_answer", data => {
+    io.to(data.to).emit("sdp_answer", data);
+  });
+
+  socket.on("ice_candidate", data => {
+    io.to(data.to).emit("ice_candidate", data);
+  });
+});
+
+io.listen(3000);
+console.log("Socket signaling server running on port 3000");
