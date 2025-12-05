@@ -1,8 +1,6 @@
-const { Server } = require("socket.io");
+import { Server } from "socket.io";
 
-const io = new Server({
-  cors: { origin: "*" },
-});
+const io = new Server({ cors: { origin: "*" } });
 
 io.on("connection", socket => {
   console.log("User connected", socket.id);
@@ -44,17 +42,11 @@ io.on("connection", socket => {
     });
   });
 
-  socket.on("sdp_offer", data => {
-    io.to(data.to).emit("sdp_offer", data);
-  });
-
-  socket.on("sdp_answer", data => {
-    io.to(data.to).emit("sdp_answer", data);
-  });
-
-  socket.on("ice_candidate", data => {
-    io.to(data.to).emit("ice_candidate", data);
-  });
+  socket.on("sdp_offer", data => io.to(data.to).emit("sdp_offer", data));
+  socket.on("sdp_answer", data => io.to(data.to).emit("sdp_answer", data));
+  socket.on("ice_candidate", data =>
+    io.to(data.to).emit("ice_candidate", data),
+  );
 });
 
 io.listen(3000);
